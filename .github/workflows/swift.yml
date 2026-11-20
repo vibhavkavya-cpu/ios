@@ -1,0 +1,40 @@
+name: Build Digicam IPA
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate Project
+        run: xcodegen generate
+      - name: Build Unsigned App
+        run: |
+          if ! xcodebuild -project Digicam.xcodeproj \
+            -scheme Digicam \
+            -configuration Release \
+            -sdk iphoneos \
+            -derivedDataPath build \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO > build.log 2>&1; then
+            echo "=== SWIFT COMPILER ERRORS ==="
+            grep -E "error:" build.log || tail -n 60 build.log
+            exit 1
+          fi
+          echo "** BUILD SUCCEEDED **"
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -r build/Build/Products/Release-iphoneos/Digicam.app Payload/
+          zip -r Digicam.ipa Payload
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v5
+        with:
+          name: Digicam-IPA
+          path: Digicam.ipa
