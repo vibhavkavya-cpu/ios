@@ -1,0 +1,29 @@
+name: Digicam
+options:
+  bundleIdPrefix: com.retro
+  deploymentTarget:
+    iOS: "17.0"
+targets:
+  Digicam:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+    settings:
+      base:
+        SWIFT_VERSION: "5.0"
+        PRODUCT_BUNDLE_IDENTIFIER: com.retro.digicam
+        GENERATE_INFOPLIST_FILE: NO
+    info:
+      path: Info.plist
+      properties:
+        CFBundleDisplayName: Digicam
+        CFBundleShortVersionString: "1.1"
+        CFBundleVersion: "2"
+        UILaunchScreen:
+          UIColorName: ""
+        NSCameraUsageDescription: "Digicam needs camera access to capture photographs."
+        NSPhotoLibraryAddUsageDescription: "Digicam saves captured photos and DNG RAW files to your camera roll."
+        NSPhotoLibraryUsageDescription: "Digicam accesses your library to save and export photos."
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
