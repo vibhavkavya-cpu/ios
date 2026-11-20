@@ -14,10 +14,8 @@ struct CameraView: View {
                 permissionDeniedView
             } else {
                 VStack(spacing: 0) {
-                    // Authentic iOS 7/8 5-icon Top Bar: Flash | HDR-Off/RAW | Bypass | Timer | 3-Circle Filter
                     ios7TopBar
 
-                    // Viewfinder (4:3 or 1:1 Square like classic iPhone 5s Camera)
                     ZStack {
                         CameraPreview(
                             cameraManager: appState.cameraManager,
@@ -39,8 +37,7 @@ struct CameraView: View {
                                 }
                         )
 
-                        // Square crop mask when SQUARE mode is selected
-                        if appState.isSquareAspect {
+                        if appState.cameraManager.isSquareAspect {
                             GeometryReader { geo in
                                 let side = min(geo.size.width, geo.size.height)
                                 let barHeight = max(0, (geo.size.height - side) * 0.5)
@@ -53,7 +50,6 @@ struct CameraView: View {
                             .allowsHitTesting(false)
                         }
 
-                        // Tap-to-focus yellow reticle + sun slider
                         if let point = appState.cameraManager.focusIndicatorPoint {
                             FocusReticleView(
                                 point: point,
@@ -70,7 +66,6 @@ struct CameraView: View {
                             )
                         }
 
-                        // Timer countdown overlay
                         if let count = appState.cameraManager.timerCountdown {
                             Text("\(count)")
                                 .font(.system(size: 76, weight: .thin, design: .default))
@@ -78,7 +73,6 @@ struct CameraView: View {
                                 .shadow(color: .black.opacity(0.6), radius: 6)
                         }
 
-                        // Toast notification (e.g. 12-BIT BAYER DNG RAW ON)
                         if let toast = appState.cameraManager.captureToastMessage {
                             VStack {
                                 Text(toast)
@@ -93,16 +87,13 @@ struct CameraView: View {
                             .allowsHitTesting(false)
                         }
 
-                        // Mechanical shutter blackout blink
                         Color.black
                             .opacity(shutterFlashOpacity)
                             .allowsHitTesting(false)
 
-                        // Persistent Always-On EV Exposure Bar + Live Telemetry at bottom of viewfinder
                         VStack(spacing: 6) {
                             Spacer()
 
-                            // Always-available Exposure Control Strip for every shot
                             persistentExposureBar
 
                             HStack(spacing: 10) {
@@ -129,7 +120,6 @@ struct CameraView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .clipped()
 
-                    // Contextual Panels: Filter Strip OR Manual Pro Controls
                     if appState.isFilterDrawerOpen {
                         FilterSelector(
                             filterLibrary: appState.filterLibrary,
@@ -149,7 +139,6 @@ struct CameraView: View {
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
 
-                    // Classic iOS 7/8 Bottom Deck: Mode Strip -> Thumbnail | Shutter | Flip Camera
                     ios7BottomDeck
                 }
             }
@@ -176,8 +165,6 @@ struct CameraView: View {
                 .environmentObject(appState)
         }
     }
-
-    // MARK: - Persistent Exposure Strip (Available on Every Shot)
 
     private var persistentExposureBar: some View {
         HStack(spacing: 8) {
@@ -210,11 +197,8 @@ struct CameraView: View {
         .background(Color.black.opacity(0.55))
     }
 
-    // MARK: - Classic iOS 7/8 5-Element Top Bar
-
     private var ios7TopBar: some View {
         HStack {
-            // 1. Flash Toggle
             Button {
                 appState.cameraManager.cycleFlashMode()
             } label: {
@@ -234,7 +218,6 @@ struct CameraView: View {
 
             Spacer()
 
-            // 2. HDR Off / RAW Indicator (Matches crossed-out HDR in iOS 7/8 screenshot)
             Button {
                 appState.cameraManager.toggleRawCapture()
             } label: {
@@ -246,7 +229,6 @@ struct CameraView: View {
 
             Spacer()
 
-            // 3. Center Zero-HDR / Sensor Status Ring
             Button {
                 appState.isEditorPresented = true
             } label: {
@@ -257,7 +239,6 @@ struct CameraView: View {
 
             Spacer()
 
-            // 4. Self-Timer Icon (Matches clock/timer icon in iOS 7/8 screenshot)
             Button {
                 appState.cameraManager.cycleTimerOption()
             } label: {
@@ -274,7 +255,6 @@ struct CameraView: View {
 
             Spacer()
 
-            // 5. Classic 3-Circle Venn Filter Toggle (Top-Right in iOS 7/8 screenshot)
             Button {
                 withAnimation(.easeInOut(duration: 0.18)) {
                     appState.isFilterDrawerOpen.toggle()
@@ -289,18 +269,15 @@ struct CameraView: View {
         .background(Color.black)
     }
 
-    // MARK: - Classic iOS 7/8 Bottom Deck
-
     private var ios7BottomDeck: some View {
         VStack(spacing: 12) {
-            // Mode Selector Strip above shutter: RAW | MANUAL | PHOTO | SQUARE
             HStack(spacing: 22) {
                 ForEach(CameraMode.allCases) { mode in
                     let isSelected = appState.activeMode == mode
                     Button {
                         withAnimation(.easeInOut(duration: 0.18)) {
                             appState.activeMode = mode
-                            appState.setSquareCrop(mode == .square)
+                            appState.cameraManager.setSquareCrop(mode == .square)
                             if mode == .raw && !appState.cameraManager.isRawCaptureEnabled {
                                 appState.cameraManager.toggleRawCapture()
                             }
@@ -319,7 +296,6 @@ struct CameraView: View {
             }
             .padding(.top, 8)
 
-            // Bottom Row: Thumbnail (Left) | Concentric Shutter (Center) | Flip Camera (Right)
             HStack {
                 Button {
                     appState.isGalleryPresented = true
@@ -350,7 +326,6 @@ struct CameraView: View {
 
                 Spacer()
 
-                // Classic iOS 7/8 Bottom-Right Camera Flip Icon
                 Button {
                     appState.cameraManager.switchCamera()
                 } label: {
